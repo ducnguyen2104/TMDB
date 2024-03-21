@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Workspace
+   version = "1.0">
+   <FileRef
+      location = "group:TMDB/CoreData/ImageLocal+CoreDataClass.swift">
+   </FileRef>
+   <FileRef
+      location = "group:TMDB/CoreData/ImageLocal+CoreDataProperties.swift">
+   </FileRef>
+   <FileRef
+      location = "group:TMDB/CoreData/MovieCollectionLocal+CoreDataClass.swift">
+   </FileRef>
+   <FileRef
+      location = "group:TMDB/CoreData/MovieCollectionLocal+CoreDataProperties.swift">
+   </FileRef>
+   <FileRef
+      location = "group:TMDB/CoreData/MovieDetailLocal+CoreDataClass.swift">
+   </FileRef>
+   <FileRef
+      location = "group:TMDB/CoreData/MovieDetailLocal+CoreDataProperties.swift">
+   </FileRef>
+   <FileRef
+      location = "group:TMDB/CoreData/MovieLocal+CoreDataClass.swift">
+   </FileRef>
+   <FileRef
+      location = "group:TMDB/CoreData/MovieLocal+CoreDataProperties.swift">
+   </FileRef>
+   <FileRef
+      location = "group:TMDB.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:Pods/Pods.xcodeproj">
+   </FileRef>
+</Workspace>
