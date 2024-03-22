@@ -33,7 +33,9 @@ class MovieDetailPresenter: MovieDetailPresenterProtocol {
                 guard let self = self else {
                     return
                 }
-                self.lookupLocal(movId: self.movId)
+                DispatchQueue.main.async {
+                    self.lookupLocal(movId: self.movId)
+                }
             })
     }
     

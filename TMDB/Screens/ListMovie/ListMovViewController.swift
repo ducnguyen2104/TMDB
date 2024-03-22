@@ -43,13 +43,44 @@ class ListMovViewController: UIViewController, ListMovViewProtocol {
         return tableView
     }()
     
+    private lazy var offlineModeView: UIView = {
+        let view = UIView()
+        view.backgroundColor = .systemBackground
+        return view
+    }()
+    
+    private lazy var offlineLabel: UILabel = {
+        let label = UILabel()
+        label.text = "You are in offline mode"
+        return label
+    }()
+    
+    private lazy var reconnectButton: UIButton = {
+        let button = UIButton()
+        button.setTitle("Reconnect", for: .normal)
+        button.addTarget(self, action: #selector(reconnect), for: .touchUpInside)
+        button.backgroundColor = .gray.withAlphaComponent(0.3)
+        return button
+    }()
+    
     override func viewDidLoad() {
         navigationController?.navigationBar.isHidden = true
         super.viewDidLoad()
 
         view.addSubview(tableView)
         view.addSubview(headerView)
+        view.addSubview(offlineModeView)
+        
         headerView.addSubview(searchTextField)
+        
+        offlineModeView.addSubview(offlineLabel)
+        offlineModeView.addSubview(reconnectButton)
+        
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(reconnect),
+            name: UIApplication.didBecomeActiveNotification,
+            object: nil)
         
         presenter?.view = self
         presenter?.onViewReadyToLoad()
@@ -62,14 +93,28 @@ class ListMovViewController: UIViewController, ListMovViewProtocol {
                                   y: 0,
                                   width: view.frame.width,
                                   height: statusbarHeight + 44)
+        offlineModeView.frame = CGRect(x: 0,
+                                       y: headerView.frame.maxY,
+                                       width: view.frame.width,
+                                       height: 44)
+        let tableTopView = offlineModeView.isHidden ? headerView : offlineModeView
         tableView.frame = CGRect(x: 0,
-                                 y: headerView.frame.maxY,
+                                 y: tableTopView.frame.maxY,
                                  width: view.frame.width,
-                                 height: view.frame.height - headerView.frame.maxY)
-        searchTextField.frame = CGRect(x: 16,
+                                 height: view.frame.height - tableTopView.frame.maxY)
+        searchTextField.frame = CGRect(x: UIConst.padding,
                                        y: statusbarHeight + 4,
-                                       width: view.frame.width - 32,
+                                       width: view.frame.width - 2*UIConst.padding,
                                        height: 44 - 8)
+        offlineLabel.frame = CGRect(x: UIConst.padding,
+                                    y: 0,
+                                    width: view.frame.width - UIConst.padding - 100,
+                                    height: offlineModeView.frame.height)
+        reconnectButton.frame = CGRect(x: view.frame.width - UIConst.padding - 100,
+                                       y: 4,
+                                       width: 100,
+                                       height: 36)
+        reconnectButton.layer.cornerRadius = 36/2
     }
     
     @objc private func textFieldTextDidChange() {
@@ -78,11 +123,26 @@ class ListMovViewController: UIViewController, ListMovViewProtocol {
         }
     }
     
+    @objc private func onBecomeActive() {
+        if !offlineModeView.isHidden {
+            reconnect()
+        }
+    }
+    
+    @objc private func reconnect() {
+        presenter?.tryLoadRemote()
+    }
+    
     //MARK: - ListMovViewProtocol
     
+    func displayOfflineMode(isOffline: Bool) {
+        offlineModeView.isHidden = !isOffline
+        view.setNeedsLayout()
+    }
+    
     func displayData() {
-        tableView.reloadData()
         tableView.setContentOffset(.zero, animated: false)
+        tableView.reloadData()
     }
     
     func appendData(indexPaths: [IndexPath]) {

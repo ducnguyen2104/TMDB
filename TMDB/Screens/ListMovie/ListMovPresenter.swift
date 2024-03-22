@@ -28,10 +28,7 @@ class ListMovPresenter: ListMovPresenterProtocol {
     private var totalSearchPages = -1
     private var canLoadMoreSearch = false
     
-    //local
     private var isShowingLocalData = false
-    private var currentLocalPage = 0
-    private var canLoadMoreLocal = false
     
     private var currentListData: [Movie] {
         isSearching ? listSearchMovies : listMovies
@@ -44,7 +41,7 @@ class ListMovPresenter: ListMovPresenterProtocol {
     
     func onViewReadyToLoad() {
         if Reachability.isConnectedToNetwork() {
-//        if false {
+            view?.displayOfflineMode(isOffline: false)
             isShowingLocalData = false
             GetListTrendingTask().execute(
                 in: networkDispatcher,
@@ -57,17 +54,20 @@ class ListMovPresenter: ListMovPresenterProtocol {
                     resp.results.forEach{ CoreDataService.shared.addMovieData(movie: $0) }
                 },
                 failure: { [weak self] err in
-                    self?.view?.displayError(error: err)
+                    DispatchQueue.main.async {
+                        self?.view?.displayError(error: err)
+                    }
                 })
         } else {
+            view?.displayOfflineMode(isOffline: true)
             isShowingLocalData = true
             CoreDataService.shared.fetchMovieData(
-                page: currentLocalPage,
+                page: currentPage,
                 onSuccess: { [weak self] movies in
                     if movies.count == CoreDataService.numPerPage {
                         //may has more
-                        self?.currentLocalPage += 1
-                        self?.canLoadMoreLocal = true
+                        self?.currentPage += 1
+                        self?.canLoadMore = true
                     }
                     self?.listMovies = movies
                     self?.view?.displayData()
@@ -79,18 +79,31 @@ class ListMovPresenter: ListMovPresenterProtocol {
         if let kw, !kw.isEmpty {
             currentSearchKw = kw
             networkDispatcher.cancel()
-            SearchMovieTask(kw: kw).execute(
-                in: networkDispatcher,
-                success: { [weak self] resp in
-                    self?.totalSearchPages = resp.totalPages
-                    self?.currentSearchPage = resp.page
-                    self?.listSearchMovies = resp.results
-                    self?.view?.displayData()
-                    self?.canLoadMoreSearch = resp.page < resp.totalPages
-                },
-                failure: { [weak self] err in
-                    self?.view?.displayError(error: err)
-                })
+            if isShowingLocalData {
+                CoreDataService.shared.searchMovieData(
+                    keyword: kw,
+                    onSuccess: { [weak self] mov in
+                        self?.listSearchMovies = mov
+                        self?.view?.displayData()
+                        //currently get all results
+                        self?.canLoadMoreSearch = false
+                    })
+            } else {
+                SearchMovieTask(kw: kw).execute(
+                    in: networkDispatcher,
+                    success: { [weak self] resp in
+                        self?.totalSearchPages = resp.totalPages
+                        self?.currentSearchPage = resp.page
+                        self?.listSearchMovies = resp.results
+                        self?.view?.displayData()
+                        self?.canLoadMoreSearch = resp.page < resp.totalPages
+                    },
+                    failure: { [weak self] err in
+                        DispatchQueue.main.async {
+                            self?.view?.displayError(error: err)
+                        }
+                    })
+            }
         } else {
             currentSearchKw = nil
             if !listMovies.isEmpty {
@@ -99,6 +112,27 @@ class ListMovPresenter: ListMovPresenterProtocol {
                 onViewReadyToLoad()
             }
         }
+    }
+    
+    func tryLoadRemote() {
+        guard Reachability.isConnectedToNetwork() else {
+            return
+        }
+        GetListTrendingTask().execute(
+            in: networkDispatcher,
+            success: { [weak self] resp in
+                self?.isShowingLocalData = false
+                self?.view?.displayOfflineMode(isOffline: false)
+                self?.totalPages = resp.totalPages
+                self?.currentPage = resp.page
+                self?.listMovies = resp.results
+                self?.view?.displayData()
+                self?.canLoadMore = resp.page < resp.totalPages
+                resp.results.forEach{ CoreDataService.shared.addMovieData(movie: $0) }
+            },
+            failure: { err in
+                
+            })
     }
     
     func numberOfRow() -> Int {
@@ -192,21 +226,21 @@ class ListMovPresenter: ListMovPresenterProtocol {
     }
     
     private func loadMoreLocalData() {
-        guard canLoadMoreLocal else {
+        guard canLoadMore else {
             return
         }
         CoreDataService.shared.fetchMovieData(
-            page: currentLocalPage,
+            page: currentPage,
             onSuccess: { [weak self] movies in
                 guard let self = self else {
                     return
                 }
                 if movies.count == CoreDataService.numPerPage {
                     //may has more
-                    self.currentLocalPage += 1
-                    self.canLoadMoreLocal = true
+                    self.currentPage += 1
+                    self.canLoadMore = true
                 } else {
-                    self.canLoadMoreLocal = false
+                    self.canLoadMore = false
                 }
                 guard !movies.isEmpty else {
                     return
@@ -216,7 +250,6 @@ class ListMovPresenter: ListMovPresenterProtocol {
                 let countAfter = self.listMovies.count
                 let indexPaths = (countBefore...countAfter - 1).map { IndexPath(row: $0, section: 0)}
                 self.view?.appendData(indexPaths: indexPaths)
-                print("load more local \(movies.count)")
             })
     }
 }

@@ -8,6 +8,7 @@
 import UIKit
 
 protocol ListMovViewProtocol: AnyObject {
+    func displayOfflineMode(isOffline: Bool)
     func displayData()
     func appendData(indexPaths: [IndexPath])
     func displayError(error: Error)
@@ -16,6 +17,7 @@ protocol ListMovViewProtocol: AnyObject {
 protocol ListMovPresenterProtocol: AnyObject {
     var view: ListMovViewProtocol? { get set }
     func onViewReadyToLoad()
+    func tryLoadRemote()
     func onScrollViewDidScroll(_ scrollView: UIScrollView)
     func numberOfRow() -> Int
     func getMovieAtIndex(index: Int) -> Movie?

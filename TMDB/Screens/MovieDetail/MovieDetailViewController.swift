@@ -54,12 +54,14 @@ class MovieDetailViewController: UIViewController, MovieDetailViewProtocol {
         let label = UILabel()
         label.numberOfLines = 0
         label.textAlignment = .center
+        label.textColor = .white
         return label
     }()
     
     private lazy var collectionLabel: UILabel = {
         let label = UILabel()
         label.text = "Collection"
+        label.textColor = .white
         return label
     }()
     
@@ -72,12 +74,14 @@ class MovieDetailViewController: UIViewController, MovieDetailViewProtocol {
     
     private lazy var collectionNameLabel: UILabel = {
         let label = UILabel()
+        label.textColor = .white
         return label
     }()
     
     private lazy var summaryLabel: UILabel = {
         let label = UILabel()
         label.numberOfLines = 0
+        label.textColor = .white
         return label
     }()
 
@@ -97,6 +101,8 @@ class MovieDetailViewController: UIViewController, MovieDetailViewProtocol {
         scrollView.addSubview(collectionImgView)
         scrollView.addSubview(collectionNameLabel)
         scrollView.addSubview(summaryLabel)
+        
+        collectionLabel.isHidden = true
         presenter?.view = self
         presenter?.onViewReadyToLoad()
     }
