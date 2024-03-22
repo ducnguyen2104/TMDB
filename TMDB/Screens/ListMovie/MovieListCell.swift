@@ -67,7 +67,7 @@ class MovieListCell: UITableViewCell {
                 })
         }
         nameLabel.text = movie.title
-        dateLabel.text = movie.date
+        dateLabel.text = String(movie.date.prefix(4))
         voteAvgLabel.text = "Average vote: \(movie.voteAvg)"
     }
     
