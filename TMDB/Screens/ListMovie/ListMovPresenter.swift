@@ -48,10 +48,12 @@ class ListMovPresenter: ListMovPresenterProtocol {
                 success: { [weak self] resp in
                     self?.totalPages = resp.totalPages
                     self?.currentPage = resp.page
-                    self?.listMovies = resp.results
+                    var validatedRes = resp.results
+                    validatedRes.removeAll(where: { !$0.isValid() })
+                    self?.listMovies = validatedRes
                     self?.view?.displayData()
                     self?.canLoadMore = resp.page < resp.totalPages
-                    resp.results.forEach{ CoreDataService.shared.addMovieData(movie: $0) }
+                    validatedRes.forEach{ CoreDataService.shared.addMovieData(movie: $0) }
                 },
                 failure: { [weak self] err in
                     DispatchQueue.main.async {
@@ -69,7 +71,9 @@ class ListMovPresenter: ListMovPresenterProtocol {
                         self?.currentPage += 1
                         self?.canLoadMore = true
                     }
-                    self?.listMovies = movies
+                    var validatedRes = movies
+                    validatedRes.removeAll(where: { !$0.isValid() })
+                    self?.listMovies = validatedRes
                     self?.view?.displayData()
                 })
         }
@@ -82,8 +86,10 @@ class ListMovPresenter: ListMovPresenterProtocol {
             if isShowingLocalData {
                 CoreDataService.shared.searchMovieData(
                     keyword: kw,
-                    onSuccess: { [weak self] mov in
-                        self?.listSearchMovies = mov
+                    onSuccess: { [weak self] movies in
+                        var validatedRes = movies
+                        validatedRes.removeAll(where: { !$0.isValid() })
+                        self?.listSearchMovies = validatedRes
                         self?.view?.displayData()
                         //currently get all results
                         self?.canLoadMoreSearch = false
@@ -92,9 +98,11 @@ class ListMovPresenter: ListMovPresenterProtocol {
                 SearchMovieTask(kw: kw).execute(
                     in: networkDispatcher,
                     success: { [weak self] resp in
+                        var validatedRes = resp.results
+                        validatedRes.removeAll(where: { !$0.isValid() })
                         self?.totalSearchPages = resp.totalPages
                         self?.currentSearchPage = resp.page
-                        self?.listSearchMovies = resp.results
+                        self?.listSearchMovies = validatedRes
                         self?.view?.displayData()
                         self?.canLoadMoreSearch = resp.page < resp.totalPages
                     },
@@ -121,14 +129,16 @@ class ListMovPresenter: ListMovPresenterProtocol {
         GetListTrendingTask().execute(
             in: networkDispatcher,
             success: { [weak self] resp in
+                var validatedRes = resp.results
+                validatedRes.removeAll(where: { !$0.isValid() })
                 self?.isShowingLocalData = false
                 self?.view?.displayOfflineMode(isOffline: false)
                 self?.totalPages = resp.totalPages
                 self?.currentPage = resp.page
-                self?.listMovies = resp.results
+                self?.listMovies = validatedRes
                 self?.view?.displayData()
                 self?.canLoadMore = resp.page < resp.totalPages
-                resp.results.forEach{ CoreDataService.shared.addMovieData(movie: $0) }
+                validatedRes.forEach{ CoreDataService.shared.addMovieData(movie: $0) }
             },
             failure: { err in
                 
@@ -182,13 +192,18 @@ class ListMovPresenter: ListMovPresenterProtocol {
                 }
                 self.totalPages = resp.totalPages
                 self.currentPage = resp.page
+                var validatedRes = resp.results
+                validatedRes.removeAll(where: { !$0.isValid() })
+                guard !validatedRes.isEmpty else {
+                    return
+                }
                 let countBefore = self.listMovies.count
-                self.listMovies.append(contentsOf: resp.results)
+                self.listMovies.append(contentsOf: validatedRes)
                 let countAfter = self.listMovies.count
                 let indexPaths = (countBefore...countAfter - 1).map { IndexPath(row: $0, section: 0)}
                 self.view?.appendData(indexPaths: indexPaths)
                 self.canLoadMore = self.currentPage < self.totalPages
-                resp.results.forEach{ CoreDataService.shared.addMovieData(movie: $0) }
+                validatedRes.forEach{ CoreDataService.shared.addMovieData(movie: $0) }
             },
             failure: { [weak self] err in
                 self?.canLoadMore = true
@@ -213,12 +228,18 @@ class ListMovPresenter: ListMovPresenterProtocol {
                 }
                 self.totalSearchPages = resp.totalPages
                 self.currentSearchPage = resp.page
+                var validatedRes = resp.results
+                validatedRes.removeAll(where: { !$0.isValid() })
+                guard !validatedRes.isEmpty else {
+                    return
+                }
                 let countBefore = self.listSearchMovies.count
-                self.listSearchMovies.append(contentsOf: resp.results)
+                self.listSearchMovies.append(contentsOf: validatedRes)
                 let countAfter = self.listSearchMovies.count
                 let indexPaths = (countBefore...countAfter - 1).map { IndexPath(row: $0, section: 0)}
                 self.view?.appendData(indexPaths: indexPaths)
                 self.canLoadMoreSearch = self.currentPage < self.totalPages
+                validatedRes.forEach{ CoreDataService.shared.addMovieData(movie: $0) }
             },
             failure: { [weak self] err in
                 self?.canLoadMoreSearch = true
@@ -242,11 +263,13 @@ class ListMovPresenter: ListMovPresenterProtocol {
                 } else {
                     self.canLoadMore = false
                 }
-                guard !movies.isEmpty else {
+                var validatedRes = movies
+                validatedRes.removeAll(where: { !$0.isValid() })
+                guard !validatedRes.isEmpty else {
                     return
                 }
                 let countBefore = self.listMovies.count
-                self.listMovies.append(contentsOf: movies)
+                self.listMovies.append(contentsOf: validatedRes)
                 let countAfter = self.listMovies.count
                 let indexPaths = (countBefore...countAfter - 1).map { IndexPath(row: $0, section: 0)}
                 self.view?.appendData(indexPaths: indexPaths)

@@ -19,7 +19,7 @@ class GetConfigTask: Operation {
         success: @escaping (ConfigResponse) -> Void,
         failure: @escaping (Error) -> Void) {
             do {
-                print(self.request.parameters)
+//                print(self.request.parameters)
                 try dispatcher.execute(request: self.request, response: { (res) in
                     switch res {
                     case .error(let error):

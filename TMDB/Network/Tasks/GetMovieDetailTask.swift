@@ -25,13 +25,13 @@ class GetMovieDetailTask: Operation {
         failure: @escaping (Error) -> Void) {
             
             do {
-                print(self.request.parameters)
+//                print(self.request.parameters)
                 try dispatcher.execute(request: self.request, response: { (res) in
                     switch res {
                     case .error(let error):
                         failure(error)
                     case .json(let json):
-                        print(json)
+//                        print(json)
                         if json == JSON.null {
                             failure(NetworkError.noData)
                             return

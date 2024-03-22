@@ -113,7 +113,7 @@ public class NetworkDispatcher: Dispatcher {
         //HTTP Method
         urlRequest.httpMethod = request.method.rawValue
         
-        print("request: \(urlRequest.url?.absoluteString ?? "")")
+//        print("request: \(urlRequest.url?.absoluteString ?? "")")
         return urlRequest
     }
 }

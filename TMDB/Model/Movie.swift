@@ -8,7 +8,8 @@
 import Foundation
 import SwiftyJSON
 
-class Movie: NSObject {
+public class Movie: NSObject {
+    
     let id: Int
     let title: String
     let poster: String
@@ -29,5 +30,20 @@ class Movie: NSObject {
         self.poster = localObject.poster ?? ""
         self.date = localObject.date ?? ""
         self.voteAvg = localObject.voteAvg
+    }
+    
+    public init(id: Int, title: String, poster: String, date: String, voteAvg: Float) {
+        self.id = id
+        self.title = title
+        self.poster = poster
+        self.date = date
+        self.voteAvg = voteAvg
+    }
+}
+
+extension Movie {
+    public func isValid() -> Bool {
+        //movies should have id > 0, title and poster are not empty
+        return id > 0 && title != "" && poster != ""
     }
 }
