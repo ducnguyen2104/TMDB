@@ -204,6 +204,23 @@ class MovieDetailViewController: UIViewController, MovieDetailViewProtocol {
     
     func displayError(error: Error) {
         
+        let alert = UIAlertController(
+            title: "Failed to load data",
+            message: Reachability.isConnectedToNetwork() ? nil : "Check your connection and try again",
+            preferredStyle: UIAlertController.Style.alert)
+        alert.addAction(UIAlertAction(
+            title: "Back",
+            style: UIAlertAction.Style.default,
+            handler: { [weak self] _ in
+                self?.back()
+            }))
+        alert.addAction(UIAlertAction(
+            title: "Retry",
+            style: UIAlertAction.Style.default,
+            handler: { [weak self] _ in
+                self?.presenter?.onViewReadyToLoad()
+            }))
+        
+        present(alert, animated: true, completion: nil)
     }
-    
 }

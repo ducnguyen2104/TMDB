@@ -150,7 +150,19 @@ class ListMovViewController: UIViewController, ListMovViewProtocol {
     }
     
     func displayError(error: Error) {
+        let alert = UIAlertController(
+            title: "Failed to load data",
+            message: "Please try again",
+            preferredStyle: UIAlertController.Style.alert)
         
+        alert.addAction(UIAlertAction(
+            title: "Retry",
+            style: UIAlertAction.Style.default,
+            handler: { [weak self] _ in
+                self?.presenter?.onViewReadyToLoad()
+            }))
+        
+        present(alert, animated: true, completion: nil)
     }
         
 }

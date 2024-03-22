@@ -34,14 +34,18 @@ class MovieDetailPresenter: MovieDetailPresenterProtocol {
                     return
                 }
                 DispatchQueue.main.async {
-                    self.lookupLocal(movId: self.movId)
+                    if !self.lookupLocal(movId: self.movId) {
+                        self.view?.displayError(error: err)
+                    }
                 }
             })
     }
     
-    private func lookupLocal(movId: Int) {
+    private func lookupLocal(movId: Int) -> Bool {
         if let mov = CoreDataService.shared.getMovieDetailData(movId: movId) {
             view?.displayMovie(movieDetail: mov)
+            return true
         }
+        return false
     }
 }

@@ -54,7 +54,7 @@ final class TMDBUITests: XCTestCase {
 
         let finalTableRows = app.tables.children(matching: .cell).count
         
-        //assume that one page has 20 items at first, and the search action return 3 results
+        //assume that one page has 20 items at first, and the search action returns 3 results
         XCTAssert(initialTableRows != finalTableRows)
     }
 }
